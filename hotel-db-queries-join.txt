@@ -48,10 +48,33 @@
 	FROM `stanze`
 	LEFT JOIN `prenotazioni`
 	ON `prenotazioni`.`stanza_id` = `stanze`.`id`  
-	WHERE `prenotazioni`.`stanza_id` IS NULL
+	WHERE `prenotazioni`.`stanza_id` IS NULL;
 
 -----------------------------------------------------------------------------------------------------------------
 Bonus: Group by
+
 - Conta gli ospiti raggruppandoli per anno di nascita
+
+	SELECT COUNT(`ospiti`.`id`) AS `Numero ospiti`, EXTRACT(YEAR FROM `ospiti`.`date_of_birth`) AS `Anno di nascita`
+	FROM `ospiti`
+	GROUP BY EXTRACT(YEAR FROM `ospiti`.`date_of_birth`);
+
+
 - Somma i prezzi dei pagamenti raggruppandoli per status
+
+	SELECT SUM(`pagamenti`.`price`) AS `Totale pagamenti`, `pagamenti`.`status`
+	FROM `pagamenti`
+	GROUP BY `pagamenti`.`status`
+
+
 - Quante prenotazioni ha fatto l’ospite che ha fatto più prenotazioni?
+
+	SELECT MAX(`Results`.`Prenotazioni`) AS `Numero prenotazioni più alto`
+	FROM 
+		(SELECT COUNT(`prenotazioni`.`id`) AS `Prenotazioni`, `ospiti`.`name` AS `Nome`, `ospiti`.`lastname` AS `Cognome`
+		FROM `prenotazioni`
+		INNER JOIN `prenotazioni_has_ospiti`
+		ON `prenotazioni_has_ospiti`.`prenotazione_id` = `prenotazioni`.`id`
+		INNER JOIN `ospiti`
+		ON `prenotazioni_has_ospiti`.`ospite_id` = `ospiti`.`id`
+		GROUP BY `ospiti`.`name`, `ospiti`.`lastname`) AS `Results`;
