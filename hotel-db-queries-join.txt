@@ -18,17 +18,14 @@
 
 - Stampare Nome, Cognome, Prezzo e Pagante per tutte le prenotazioni fatte a Maggio 2018
 
-	SELECT `ospiti`.`name`, `ospiti`.`lastname` , `pagamenti`.`price`, `paganti`.`name`, `paganti`.`lastname`, `prenotazioni`.`created_at` AS `Data prenotazione`
-	FROM `ospiti`
-	INNER JOIN `prenotazioni_has_ospiti`
-	ON `prenotazioni_has_ospiti`.`ospite_id` = `ospiti`.`id`
-	INNER JOIN `prenotazioni`
-	ON `prenotazioni_has_ospiti`.`prenotazione_id` = `prenotazioni`.`id`
-	INNER JOIN `pagamenti`
-	ON `prenotazioni`.`id` = `pagamenti`.`prenotazione_id`
+	SELECT `paganti`.`name`, `paganti`.`lastname`, `pagamenti`.`price`, `pagamenti`.`created_at` AS `Data prenotazione`
+	FROM `pagamenti`
 	INNER JOIN `paganti`
 	ON `pagamenti`.`pagante_id` = `paganti`.`id`
-	WHERE `prenotazioni`.`created_at` LIKE '2018-05_%';
+	INNER JOIN `prenotazioni`
+	ON `pagamenti`.`prenotazione_id` = `prenotazioni`.`id`
+	WHERE YEAR(`prenotazioni`.`created_at`) = '2018'
+	AND MONTH(`prenotazioni`.`created_at`) = '05';
 
 
 - Fai la somma di tutti i prezzi delle prenotazioni per le stanze del primo piano
@@ -48,7 +45,7 @@
 	FROM `stanze`
 	LEFT JOIN `prenotazioni`
 	ON `prenotazioni`.`stanza_id` = `stanze`.`id`  
-	WHERE `prenotazioni`.`stanza_id` IS NULL;
+	WHERE `prenotazioni`.`id` IS NULL;
 
 -----------------------------------------------------------------------------------------------------------------
 Bonus: Group by
@@ -69,12 +66,12 @@ Bonus: Group by
 
 - Quante prenotazioni ha fatto l’ospite che ha fatto più prenotazioni?
 
-	SELECT MAX(`Results`.`Prenotazioni`) AS `Numero prenotazioni più alto`
-	FROM 
-		(SELECT COUNT(`prenotazioni`.`id`) AS `Prenotazioni`, `ospiti`.`name` AS `Nome`, `ospiti`.`lastname` AS `Cognome`
-		FROM `prenotazioni`
-		INNER JOIN `prenotazioni_has_ospiti`
-		ON `prenotazioni_has_ospiti`.`prenotazione_id` = `prenotazioni`.`id`
-		INNER JOIN `ospiti`
-		ON `prenotazioni_has_ospiti`.`ospite_id` = `ospiti`.`id`
-		GROUP BY `ospiti`.`name`, `ospiti`.`lastname`) AS `Results`;
+	SELECT COUNT(`prenotazioni`.`id`) AS `Numero prenotazioni`, `ospiti`.`name` AS `Nome`, `ospiti`.`lastname` AS `Cognome`
+	FROM `prenotazioni`
+	INNER JOIN `prenotazioni_has_ospiti`
+	ON `prenotazioni_has_ospiti`.`prenotazione_id` = `prenotazioni`.`id`
+	INNER JOIN `ospiti`
+	ON `prenotazioni_has_ospiti`.`ospite_id` = `ospiti`.`id`
+	GROUP BY `ospiti`.`name`, `ospiti`.`lastname`
+	ORDER BY `Numero prenotazioni` DESC
+	LIMIT 1;
